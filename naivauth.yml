@@ -45,3 +45,8 @@ access:
         - alice                       # If all keys match, rule is applied.
                                       # Better yet, create a class: RuleMatch(headers, session) with methods
                                       # RuleMatch.host(value), RuleMatch.regex(value), RuleMatch.users(value)
+                                      # Or we can turn this upside down: AccessRule(**kwargs) would generate
+                                      # multiple Matcher(headers, session) objects for all keys at once. Regex
+                                      # checking would become cheaper that way thanks to compiled expressions.
+                                      # API would be: AccessRule(host=host, regex=regex, users=users),
+                                      #               AccessRule.check(headers, session)
