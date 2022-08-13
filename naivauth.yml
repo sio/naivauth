@@ -1,0 +1,47 @@
+# AUTHENTICATION
+users:
+  root:                               # Multiple authentication channels are supported for each user.
+    telegram: @johndoe                # Auth server stores a session cookie in user browser and shows to user
+    email: johndoe@example.com        # a short random number tied to session. When user sends the same
+  alice:                              # number through any of authenticated channels, that session gets
+    telegram: @alicecooper            # associated with that user
+  bob:
+    email: bob@example.com
+  charlie:
+    # charlie has no authentication channels and can be
+    # authenticated only by admins (out of band)
+
+
+groups:
+  admins:                             # admins can authenicate other users' session keys
+    - root                            # other group names are free-form
+  writers:
+    - root
+    - alice
+  readers:
+    - bob
+    - alice
+    - charlie
+
+
+# AUTHORIZATION
+#
+# Order of evaluation: deny, allow, default (top to bottom)
+# If any rule matches, evaluation stops and the rule is applied
+access:
+  default: deny
+  allow:
+    - host: ssh.hostname.local
+      groups:
+        - admins
+    - host: web.hostname.local
+      groups:
+        - readers
+        - admins
+  deny:
+    - host: web.hostname.local        # Each key is evaluated by a separate function with a matching name:
+      regex: .*/admin/.*              #   match_host(headers, session, value) -> bool
+      users:                          #   match_regex(headers, session, value) -> bool
+        - alice                       # If all keys match, rule is applied.
+                                      # Better yet, create a class: RuleMatch(headers, session) with methods
+                                      # RuleMatch.host(value), RuleMatch.regex(value), RuleMatch.users(value)
