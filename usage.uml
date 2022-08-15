@@ -1,0 +1,49 @@
+@startuml
+skinparam sequenceMessageAlign direction
+skinparam maxMessageSize 120
+
+participant "Client" as client
+participant "Reverse proxy" as proxy
+
+box "naivauth"
+participant "Auth backend" as backend
+participant "Database" as database
+participant "Auth frontend" as frontend
+participant "Listener on a\npre-authenticated\nchannel" as preauthenticated
+end box
+
+participant "Web application" as app
+
+note across: Deny access by default
+client -> proxy: Unauthenticated request (no session cookie)
+proxy --> backend: Authorization request
+backend --> proxy: HTTP 401
+proxy ->x client: Deny access
+
+note across: Authenticating
+client -> frontend: Initial request (non authenticated)
+frontend --> database: //fingerprint (based on IP and headers)//
+database --> frontend: //cookie, token (both random and unique)//
+frontend -> client: Set cookie, show login token
+client -> preauthenticated: Repeat login token via pre-authenticated channel (telegram, email, in person)
+preauthenticated --> database: //mark session as valid, assign to an account//
+
+note across: Authenticated auth (happy path)
+client -> proxy: Initial request (with session cookie)
+proxy --> backend: Authorization request
+backend --> database: //fingerprint, cookie//
+database --> backend: //user account//
+backend --> backend: Check access rules
+backend --> proxy: HTTP 200
+proxy <-> app: Actual request
+proxy -> client: Application response
+
+note across: Authenticated auth (session expired or invalid)
+client -> proxy: Initial request (with session cookie)
+proxy --> backend: Authorization request
+backend --> database: //fingerprint, cookie//
+database --> backend: //error//
+backend --> proxy: HTTP 403
+proxy ->x client: Deny access
+
+@enduml
