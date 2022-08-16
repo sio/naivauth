@@ -12,22 +12,22 @@
  */
 
 
-CREATE EXTENSION pgcrypto;  /* get_random_uuid() */
+CREATE EXTENSION IF NOT EXISTS pgcrypto;  /* get_random_uuid() */
 
 
-CREATE OR REPLACE random_int(low int, high int) RETURNS int AS $$
+CREATE OR REPLACE FUNCTION random_int(low int, high int) RETURNS int AS $$
     BEGIN
         RETURN floor(random() * (high - low + 1) + low);
     END;
 $$ LANGUAGE plpgsql STRICT;
 
 
-CREATE TABLE session (
+CREATE TABLE IF NOT EXISTS session (
     fingerprint bytea NOT NULL,
-    cookie      uuid PRIMARY KEY DEFAULT get_random_uuid(),
+    cookie      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     token       int DEFAULT random_int(100000, 999999),
     active      boolean NOT NULL DEFAULT false,
-    user        text,
+    username    text,
     created_at  timestamp with time zone DEFAULT now() NOT NULL,
     expires_at  timestamp with time zone DEFAULT now() + interval '15m' NOT NULL,
     trash       uuid UNIQUE, /* NULL for non-trash, copy cookie otherwise */
@@ -37,6 +37,6 @@ CREATE TABLE session (
 );
 
 
-CREATE INDEX cookie_lookup ON session USING HASH (cookie);
-CREATE INDEX fingerprint_lookup ON session USING HASH (fingerprint);
-CREATE INDEX token_lookup ON session USING HASH (token);
+CREATE INDEX IF NOT EXISTS cookie_lookup ON session USING HASH (cookie);
+CREATE INDEX IF NOT EXISTS fingerprint_lookup ON session USING HASH (fingerprint);
+CREATE INDEX IF NOT EXISTS token_lookup ON session USING HASH (token);
