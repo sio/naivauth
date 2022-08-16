@@ -3,7 +3,7 @@ REQUIREMENTS_TXT=tests/requirements.txt
 
 .PHONY: test
 test: | venv
-	$(VENV)/pytest
+	$(VENV)/pytest $(PYTEST_ARGS)
 
 
 .PHONY: postgres

@@ -29,7 +29,7 @@ def database(postgres):
     yield postgres
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture
 def postgres(temp_database):
     '''Create empty postgres database'''
     dbname = _new_test_db(**PG_CONNECTION)
