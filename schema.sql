@@ -73,6 +73,10 @@ CREATE OR REPLACE FUNCTION get_username(fingerprint bytea, cookie uuid) RETURNS 
 $$ LANGUAGE sql STRICT;
 
 
+/*
+ * This function may raise an error upon token collision when randomly
+ * generated new value matches another unused (not yet garbage collected) token
+ */
 CREATE OR REPLACE FUNCTION get_token(fingerprint bytea, OUT token int, OUT cookie uuid) AS $$
 BEGIN
     /* Check if there already exists a token waiting to be activated */
@@ -111,4 +115,17 @@ CREATE OR REPLACE PROCEDURE deactivate(cookie uuid) AS $$
         trash = cookie
     WHERE
         session.cookie = deactivate.cookie;
+$$ LANGUAGE sql;
+
+
+/* This procedure needs to be called from time to time to return used tokens
+ * back into available pool */
+CREATE OR REPLACE PROCEDURE collect_garbage() AS $$
+    UPDATE session
+    SET
+        active = false,
+        trash = cookie
+    WHERE
+        expires_at < now() AND
+        trash IS NULL;
 $$ LANGUAGE sql;
