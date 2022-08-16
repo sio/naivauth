@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS session (
 );
 
 
-CREATE UNIQUE INDEX IF NOT EXISTS constraint_token_unique_among_active ON session USING HASH (
+CREATE UNIQUE INDEX IF NOT EXISTS constraint_token_unique_among_active ON session (
     token,
     coalesce(trash, '00000000-0000-0000-0000-000000000000')
 );
