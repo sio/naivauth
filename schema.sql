@@ -32,9 +32,14 @@ CREATE TABLE IF NOT EXISTS session (
     expires_at  timestamp with time zone DEFAULT now() + interval '15m' NOT NULL,
     trash       uuid UNIQUE, /* NULL for non-trash, copy cookie otherwise */
 
-    CONSTRAINT token_unique_among_active UNIQUE(token, trash),
     CONSTRAINT token_length CHECK (token > 100000),
     CONSTRAINT active_must_assign_user CHECK (NOT active OR (active AND (username IS NOT NULL)))
+);
+
+
+CREATE UNIQUE INDEX IF NOT EXISTS constraint_token_unique_among_active ON session USING HASH (
+    token,
+    coalesce(trash, '00000000-0000-0000-0000-000000000000')
 );
 
 
