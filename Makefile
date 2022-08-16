@@ -1,6 +1,11 @@
 REQUIREMENTS_TXT=tests/requirements.txt
 
 
+.PHONY: test
+test: | venv
+	$(VENV)/pytest
+
+
 include Makefile.venv
 Makefile.venv:
 	curl \
