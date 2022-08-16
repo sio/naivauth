@@ -6,6 +6,11 @@ test: | venv
 	$(VENV)/pytest
 
 
+.PHONY: postgres
+postgres:
+	docker-compose -f dev/postgres.yml up
+
+
 include Makefile.venv
 Makefile.venv:
 	curl \

@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 127.0.0.1:5432:5432
+
+  admin:
+    image: adminer
+    ports:
+      - 127.0.0.1:80:8080
