@@ -2,6 +2,9 @@
 
 ## SQL
 
+- Add stored procedure to extend session lifetime
+- Store schema version somewhere
+- Add key:value table for misc constants
 - Write tests for schema constraints
     - Token length
     - Active session must have username assigned
