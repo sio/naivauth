@@ -21,12 +21,16 @@ SCHEMA_DIRECTORY = Path('schema/')
 
 @pytest.fixture
 def database(postgres):
-    with postgres:
-        with postgres.cursor() as cursor:
+    apply_schema(postgres)
+    yield postgres
+
+
+def apply_schema(connection):
+    with connection:
+        with connection.cursor() as cursor:
             for sql in sorted(SCHEMA_DIRECTORY.glob('*.sql')):
                 with sql.open() as f:
                     cursor.execute(f.read())
-    yield postgres
 
 
 @pytest.fixture
