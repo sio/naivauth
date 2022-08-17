@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS session (
     fingerprint bytea NOT NULL,
     cookie      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    token       int DEFAULT random_int(100000, 999999),
+    token       int NOT NULL DEFAULT random_int(100000, 999999),
     active      boolean NOT NULL DEFAULT false,
     username    text,
     created_at  timestamp with time zone DEFAULT now() NOT NULL,
