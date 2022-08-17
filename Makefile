@@ -8,7 +8,7 @@ test: | venv
 
 .PHONY: postgres
 postgres:
-	docker-compose -f dev/postgres.yml up
+	docker-compose -f dev/postgres.yml up $(DOCKER_COMPOSE_ARGS)
 
 
 include Makefile.venv
