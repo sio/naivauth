@@ -1,6 +1,5 @@
 import psycopg2
 import pytest
-import sqlparse
 
 from collections import defaultdict
 from contextlib import contextmanager
@@ -13,6 +12,7 @@ QUERY_TYPES = [  # order matters
     'multiline',
     'error',
 ]
+QUERY_DELIMITER = '\n---\n'
 TEST_DIR = Path(__file__).parent
 
 
@@ -46,42 +46,40 @@ class TestQuery:
             if not query_file.exists():
                 continue
             execute = getattr(self, f'query_{query_type}')
-            with query_file.open() as q:
-                execute(sqlparse.split(q.read()))
+            with query_file.open() as fd:
+                for q in fd.read().split(QUERY_DELIMITER):
+                    if not q.strip():  # drop empty queries
+                        continue
+                    execute(q)
 
-    def query_setup(self, queries):
-        '''Setup queries have no assertions, they just have not to crash anything'''
+    def query_setup(self, query):
+        '''Setup query have no assertions, they just have not to crash anything'''
         with get_cursor(self.db) as cursor:
-            for query in queries:
-                cursor.execute(query)
+            cursor.execute(query)
 
-    def query_empty(self, queries):
+    def query_empty(self, query):
         '''Each query must return empty result'''
         with get_cursor(self.db) as cursor:
-            for query in queries:
-                cursor.execute(query)
-                for result in cursor:
-                    raise AssertionError(f'non-empty result, first row: {result}')
+            cursor.execute(query)
+            for result in cursor:
+                raise AssertionError(f'non-empty result, first row: {result}')
 
-    def query_oneline(self, queries):
+    def query_oneline(self, query):
         '''Each query must return only one result'''
         with get_cursor(self.db) as cursor:
-            for query in queries:
-                cursor.execute(query)
-                results = cursor.fetchmany(2)
-                assert len(results) == 1
+            cursor.execute(query)
+            results = cursor.fetchmany(2)
+            assert len(results) == 1
 
-    def query_multiline(self, queries):
+    def query_multiline(self, query):
         '''Each query must return at least two results'''
         with get_cursor(self.db) as cursor:
-            for query in queries:
-                cursor.execute(query)
-                results = cursor.fetchmany(2)
-                assert len(results) == 2
+            cursor.execute(query)
+            results = cursor.fetchmany(2)
+            assert len(results) == 2
 
-    def query_error(self, queries):
+    def query_error(self, query):
         '''Each query must raise an error'''
         with get_cursor(self.db) as cursor:
-            for query in queries:
-                with pytest.raises(psycopg2.DatabaseError):
-                    cursor.execute(query)
+            with pytest.raises(psycopg2.DatabaseError):
+                cursor.execute(query)
