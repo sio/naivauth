@@ -25,3 +25,4 @@
   Would this be enough to stop an attacker with access to database from
   stealing a session (renaming existing session to another user, stealing
   token and adding it to attacker's session instead)
+- Add option to verify signature of the configuration YAML file
